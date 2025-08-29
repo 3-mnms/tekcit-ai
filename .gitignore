@@ -1,0 +1,24 @@
+# 환경 변수
+.env
+.env.local
+
+# IDE 설정
+.idea/
+.vscode/
+
+# Python
+__pycache__/
+*.py[cod]
+.python-version
+
+# Poetry
+poetry.lock
+
+# 빌드/실행 파일
+dist/
+build/
+*.egg-info/
+
+# 로그 및 캐시
+*.log
+.cache
