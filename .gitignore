@@ -11,8 +11,6 @@ __pycache__/
 *.py[cod]
 .python-version
 
-# Poetry
-poetry.lock
 
 # 빌드/실행 파일
 dist/
@@ -22,3 +20,4 @@ build/
 # 로그 및 캐시
 *.log
 .cache
+.venv
