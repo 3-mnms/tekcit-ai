@@ -11,7 +11,7 @@ class ReviewRequest(BaseModel):
     neg_count: int
     neu_count: int
 
-@router.post("/festival/review/analyze")
+@router.post("/analyze")
 async def analyze_review(request: ReviewRequest):
     summary = request.summary
     new_review = request.new_review

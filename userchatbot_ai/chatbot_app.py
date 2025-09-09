@@ -1,30 +1,15 @@
 import os
-import sys
 import json
 import requests
-from dotenv import load_dotenv
+from userchatbot_ai.config import invoke_url, headers, titan_config
 from langchain_aws import BedrockEmbeddings
 from langchain_chroma import Chroma
-
-# --- 1. 경로 및 환경 설정 ---
+# # --- 1. 경로 및 환경 설정 ---
 current_path = os.path.dirname(os.path.abspath(__file__))
-project_root = os.path.dirname(current_path)
-sys.path.append(project_root)
-
-from userchatbot_ai.config import headers
-
-# .env 파일 로드 (AWS 자격증명 등 환경 변수)
-dotenv_path = os.path.join(project_root, '.env')
-load_dotenv(dotenv_path=dotenv_path)
-
-# Claude 3 Haiku 모델 엔드포인트 (Bedrock)
-invoke_url = (
-    "https://bedrock-runtime.us-east-1.amazonaws.com/"
-    "model/anthropic.claude-3-haiku-20240307-v1:0/invoke"
-)
 
 # --- 2. 임베딩 및 ChromaDB 로드 ---
-embeddings = BedrockEmbeddings(model_id="amazon.titan-embed-text-v2:0")
+embeddings = BedrockEmbeddings(**titan_config)
+
 persist_directory = os.path.join(current_path, "chroma_db")
 vectorstore = Chroma(
     persist_directory=persist_directory,
