@@ -21,3 +21,6 @@ build/
 *.log
 .cache
 .venv
+
+# 크로마 DB (로컬)(추후 삭제 예정)
+userchatbot_ai/chroma_db/
