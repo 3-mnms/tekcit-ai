@@ -12,7 +12,7 @@ class ChatResponse(BaseModel):
     """챗봇의 답변을 담는 응답 모델입니다."""
     answer: str
 
-@router.post("/chat", response_model=ChatResponse)
+@router.post("", response_model=ChatResponse)
 async def chat_with_tekcit(request: ChatRequest):
     """
     사용자의 질문을 받아 챗봇 답변을 반환하는 API 엔드포인트입니다.
