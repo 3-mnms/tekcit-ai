@@ -33,7 +33,7 @@ def review_analyze(summary, new_review, p_count, neg_count, neu_count):
         "max_tokens": 512
     }
     try:
-        response = requests.post(invoke_url, headers=headers, data=json.dumps(body)) //adsadsd
+        response = requests.post(invoke_url, headers=headers, data=json.dumps(body))
         print("🔎 Raw Response Text:\n", response.text)
 
         content_list = response.json().get("content", [])
