@@ -5,6 +5,7 @@ import re
 from activity_ai.server.schemas import KakaoResponse
 from typing import List
 
+#request 정보 장소명 주소 합치기
 def format_places(places: List[KakaoResponse]):
     return "\n".join([
         f"{i+1}. {p.place_name} ({p.address_name})"
@@ -29,17 +30,17 @@ def buildPrompt(restaurants: List[KakaoResponse], hot_places: List[KakaoResponse
 
 응답 형식 (다른 말 절대 하지 마세요):
 
-- 추천 맛집 TOP3:
+추천 맛집 TOP3:
 1. [이름]
 2. [이름]
 3. [이름]
 
-- 추천 놀거리 TOP3:
+추천 놀거리 TOP3:
 1. [이름]
 2. [이름]
 3. [이름]
 
-- 추천 코스:
+추천 코스:
 1. 공연장 → [맛집1] → [놀거리1]
 2. 공연장 → [맛집2] → [놀거리2]
 3. 공연장 → [맛집3] → [놀거리3]
@@ -47,7 +48,7 @@ def buildPrompt(restaurants: List[KakaoResponse], hot_places: List[KakaoResponse
 
 #추천 맛집, 추천 놀거리 list로 뽑기
 def extract_block(text: str, title: str) -> list[str]:
-    pattern = rf"- {title} TOP3:\r?\n((?:\d+\..+\r?\n)+)"
+    pattern = rf"{title}\s*TOP3:\s*\r?\n((?:\d+\..+(?:\r?\n|$))+)"    
     match = re.search(pattern, text, flags=re.MULTILINE)
     if not match:
         return []
@@ -56,7 +57,7 @@ def extract_block(text: str, title: str) -> list[str]:
 
 #추천 코스 뽑기
 def extract_courses(text: str) -> list[str]:
-    pattern = r"- 추천 코스:\r?\n((?:\d+\..+\r?\n)+)"
+    pattern = r"추천\s*코스:\s*\r?\n((?:\d+\..+(?:\r?\n|$))+)"
     match = re.search(pattern, text, flags=re.MULTILINE)
     if not match:
         return []
@@ -103,11 +104,9 @@ def recommend_activity(restaurants: List[KakaoResponse], hot_places: List[KakaoR
     result_restaurants = find_matching_places(restaurant_names, restaurants)
     result_hot_places  = find_matching_places(hot_place_names, hot_places)
     
-    to_dict = lambda p: p.model_dump() if hasattr(p, "model_dump") else (p.dict() if hasattr(p, "dict") else p)
-
     return {
-        "restaurants": [to_dict(p) for p in result_restaurants],
-        "hot_places":  [to_dict(p) for p in result_hot_places],
+        "restaurants": [p.model_dump() for p in result_restaurants],
+        "hot_places":  [p.model_dump() for p in result_hot_places],
         "course1": courses[0] if len(courses) > 0 else "",
         "course2": courses[1] if len(courses) > 1 else "",
         "course3": courses[2] if len(courses) > 2 else ""

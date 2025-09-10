@@ -1,13 +1,8 @@
 from fastapi import APIRouter
-from pydantic import BaseModel
 from activity_ai.recommend_activity import recommend_activity
-from typing import List
-from activity_ai.server.schemas import KakaoResponse
-router = APIRouter()
+from activity_ai.server.schemas import ActivityRequest
 
-class ActivityRequest(BaseModel):
-    restaurants:List[KakaoResponse]
-    hot_places:List[KakaoResponse]
+router = APIRouter()
 
 @router.post("/recommend")
 async def activity_ai_recommend(request: ActivityRequest):
