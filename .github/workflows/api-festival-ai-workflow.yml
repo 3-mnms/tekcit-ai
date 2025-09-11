@@ -1,0 +1,84 @@
+name: "api festival ai workflow"
+
+on:
+  push:
+    branches: [ main, develop ]
+  workflow_dispatch: {}
+
+permissions:
+  contents: read
+
+concurrency:
+  group: api-festival-ai-${{ github.ref_name }}
+  cancel-in-progress: true
+
+env:
+  SERVICE: festival-ai
+  IMAGE:   ${{ secrets.DOCKER_NAME }}/api-festival-ai
+  DEVOPS_REPO: 3-mnms/gitops-repo
+
+jobs:
+  build-push:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: ⏱️ Tag
+        run: echo "TAG=v$(date -u +'%Y%m%d%H%M%S')" >> $GITHUB_ENV
+
+      - uses: docker/setup-buildx-action@v3
+      - uses: docker/login-action@v3
+        with:
+          name: ${{ secrets.DOCKER_NAME }}
+          password: ${{ secrets.DOCKER_TOKEN }}
+
+      - id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ env.IMAGE }}
+          tags: |
+            type=raw,value=${{ env.TAG }}
+            type=sha
+            type=raw,value=v0.1
+            type=raw,value=latest
+
+      - uses: docker/build-push-action@v5
+        with:
+          context: .
+          file: ./Dockerfile
+          push: true
+          platforms: linux/amd64,linux/arm64
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+      - name: Dispatch to GitOps (develop-gke + develop-aws)
+        if: ${{ github.ref_name == 'develop' }}
+        uses: peter-evans/repository-dispatch@v3
+        with:
+          token:  ${{ secrets.GH_PAT }}
+          repository: ${{ env.DEVOPS_REPO }}
+          event-type: image-updated
+          client-payload: |
+            {
+              "service": "${{ env.SERVICE }}",
+              "image":   "${{ env.IMAGE }}",
+              "tag":     "${{ env.TAG }}",
+              "targets": "develop-gke,develop-aws"
+            }
+
+      - name: Dispatch to GitOps (prod)
+        if: ${{ github.ref_name == 'main' }}
+        uses: peter-evans/repository-dispatch@v3
+        with:
+          token:  ${{ secrets.GH_PAT }}
+          repository: ${{ env.DEVOPS_REPO }}
+          event-type: image-updated
+          client-payload: |
+            {
+              "service": "${{ env.SERVICE }}",
+              "image":   "${{ env.IMAGE }}",
+              "tag":     "${{ env.TAG }}",
+              "env":     "prod"
+            }

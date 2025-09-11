@@ -19,4 +19,4 @@ COPY . .
 
 EXPOSE 8084
 
-CMD ["poetry", "run", "uvicorn", "review_ai.server.main:app", "--host", "0.0.0.0", "--port", "8084"]
+CMD ["poetry", "run", "uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8084"]
