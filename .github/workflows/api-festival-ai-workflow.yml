@@ -14,7 +14,7 @@ concurrency:
 
 env:
   SERVICE: festival-ai
-  IMAGE:   ${{ secrets.DOCKER_NAME }}/api-festival-ai
+  IMAGE:   ${{ secrets.DOCKER_USERNAME }}/api-festival-ai
   DEVOPS_REPO: 3-mnms/gitops-repo
 
 jobs:
