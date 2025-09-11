@@ -1,34 +1,25 @@
-FROM python:3.12-slim AS base
+FROM python:3.12-slim
 
-# 환경 변수 설정 (Poetry + Python 최적화)
-ENV PYTHONUNBUFFERED=1 \
-    PYTHONDONTWRITEBYTECODE=1 \
-    POETRY_VIRTUALENVS_IN_PROJECT=true \
-    PATH="/app/.venv/bin:$PATH"
+# system dependencies
+RUN apt-get update && apt-get install -y build-essential && rm -rf /var/lib/apt/lists/*
 
+# create working dir
 WORKDIR /app
 
-# --- Build deps stage (빌드 도구 설치) ---
-FROM base AS build
-RUN apt-get update && apt-get install -y --no-install-recommends \
-    gcc \
-    libffi-dev \
-    && rm -rf /var/lib/apt/lists/*
+# copy poetry config and project files
+COPY pyproject.toml poetry.lock* ./
 
-RUN pip install --no-cache-dir poetry
+# install poetry
+RUN pip install --upgrade pip && pip install poetry
 
-COPY pyproject.toml poetry.lock ./
+# install dependencies (no virtualenvs)
+RUN poetry config virtualenvs.create false && poetry install --no-root
 
-RUN poetry install --no-root --no-interaction --no-ansi
-
-FROM base AS runtime
-RUN apt-get update && apt-get install -y --no-install-recommends \
-    libffi-dev \
-    && rm -rf /var/lib/apt/lists/*
-
-COPY --from=build /app /app
-
-# 소스 복사 
+# copy the rest of the code
 COPY . .
-EXPOSE 8084
-CMD ["uvicorn", "review_ai.server.main:app", "--host", "0.0.0.0", "--port", "8084"]
+
+# expose port
+EXPOSE 8003
+
+# run the server
+CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8084"]
