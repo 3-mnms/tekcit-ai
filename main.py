@@ -12,8 +12,9 @@ app = FastAPI(
 
 origins = [
     "https://m.rookies-tekcit.com",
-    "http://localhost:3000"
-    "http://localhost:5173"
+    "http://localhost:3000",
+    "http://localhost:5173",
+    "http://localhost:10000"
 ]
 
 app.add_middleware(
