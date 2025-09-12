@@ -3,6 +3,8 @@ from review_ai.server.routes import router as review_router
 from userchatbot_ai.server.routes import router as chatbot_router
 from activity_ai.server.routes import router as activity_router
 from fastapi.middleware.cors import CORSMiddleware
+from dotenv import load_dotenv
+load_dotenv()
 
 app = FastAPI(
     title = "TEKCIT-AI API",
