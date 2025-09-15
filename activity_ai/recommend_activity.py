@@ -2,7 +2,7 @@ import json
 import requests
 from activity_ai.config import invoke_url, headers
 import re
-from activity_ai.server.schemas import KakaoResponse
+from activity_ai.server.schemas import KakaoResponse, ActivityDTO
 from typing import List
 
 #request 정보 장소명 주소 합치기
@@ -12,7 +12,7 @@ def format_places(places: List[KakaoResponse]):
         for i, p in enumerate(places)
     ])
 
-def buildPrompt(restaurants: List[KakaoResponse], hot_places: List[KakaoResponse]):
+def build_prompt(restaurants: List[KakaoResponse], hot_places: List[KakaoResponse]):
     return f"""
 당신은 공연장 근처 장소 데이터를 기반으로, **가장 인기 있어 보이는 맛집 3곳과 놀거리 3곳을 뽑고 추천 코스**를 제시하는 AI입니다.
 
@@ -76,9 +76,19 @@ def find_matching_places(selected_names: list[str], full_list: List[KakaoRespons
                 result.append(raw_place)
                 break
     return result
-          
+
+def to_activity_dto(p: KakaoResponse, typ: str) -> dict:
+    dto = ActivityDTO(
+        activity_name=p.place_name,
+        address_name=p.address_name,
+        latitude=float(p.y),
+        longitude=float(p.x),
+        activity_type=typ
+    )
+    return dto.model_dump()
+
 def recommend_activity(restaurants: List[KakaoResponse], hot_places: List[KakaoResponse]) -> dict:
-    prompt = buildPrompt(restaurants, hot_places)
+    prompt = build_prompt(restaurants, hot_places)
     body = {
         "anthropic_version": "bedrock-2023-05-31",
         "messages": [{"role": "user", "content": prompt}],
@@ -87,7 +97,7 @@ def recommend_activity(restaurants: List[KakaoResponse], hot_places: List[KakaoR
     try:
         response = requests.post(invoke_url, headers=headers, data=json.dumps(body))
         print(response)
-        print("🔎 Raw Response Text:\n", response.text)
+        print("Raw Response Text:\n", response.text)
 
         content_list = response.json().get("content", [])
         if isinstance(content_list, list) and len(content_list) > 0:
@@ -105,8 +115,8 @@ def recommend_activity(restaurants: List[KakaoResponse], hot_places: List[KakaoR
     result_hot_places  = find_matching_places(hot_place_names, hot_places)
     
     return {
-        "restaurants": [p.model_dump() for p in result_restaurants],
-        "hot_places":  [p.model_dump() for p in result_hot_places],
+        "restaurants": [to_activity_dto(p, "Restaurant") for p in result_restaurants],
+        "hot_places":  [to_activity_dto(p, "HotPlace") for p in result_hot_places],
         "course1": courses[0] if len(courses) > 0 else "",
         "course2": courses[1] if len(courses) > 1 else "",
         "course3": courses[2] if len(courses) > 2 else ""
