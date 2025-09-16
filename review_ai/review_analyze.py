@@ -2,7 +2,7 @@ import json
 import requests
 from review_ai.config import invoke_url, headers
 
-def buildPrompt(summary, new_review, p_count, neg_count, neu_count):
+def build_prompt(summary, new_review, p_count, neg_count, neu_count):
     return f"""
 당신은 공연 기대평을 요약하고 감정을 분석하는 AI입니다.
 입력:
@@ -19,14 +19,14 @@ def buildPrompt(summary, new_review, p_count, neg_count, neu_count):
 -요약: (요약문)
 """
     
-def extractResult(result, key):
+def extract_result(result, key):
     for line in result.split("\n"):
         if line.strip().startswith(f"-{key}:"):
             return line.split(":", 2)[1].strip()
     return ""
           
 def review_analyze(summary, new_review, p_count, neg_count, neu_count):
-    prompt = buildPrompt(summary, new_review, p_count, neg_count, neu_count)
+    prompt = build_prompt(summary, new_review, p_count, neg_count, neu_count)
     body = {
         "anthropic_version": "bedrock-2023-05-31",
         "messages": [{"role": "user", "content": prompt}],
@@ -44,8 +44,8 @@ def review_analyze(summary, new_review, p_count, neg_count, neu_count):
     except Exception as e:
             raise RuntimeError(f"AI 호출 실패: {e}")
     
-    emotion = extractResult(aiResult, "감정");
-    new_summary = extractResult(aiResult, "요약");
+    emotion = extract_result(aiResult, "감정");
+    new_summary = extract_result(aiResult, "요약");
 
     if emotion == "긍정":
         p_count+=1
