@@ -1,9 +1,13 @@
 from fastapi import APIRouter
 from pydantic import BaseModel
 from userchatbot_ai.chatbot_app import ask_chatbot
+import userchatbot_ai.chatbot_app as chatbot_app
+import inspect
+from userchatbot_ai import chatbot_app
 
 router = APIRouter()
-
+print("🔥 불러온 ask_chatbot 경로:", inspect.getfile(chatbot_app.ask_chatbot))
+print("🔥 chatbot_app 위치:", chatbot_app.__file__)
 class ChatRequest(BaseModel):
     """사용자 질문을 담는 요청 모델입니다."""
     question: str
